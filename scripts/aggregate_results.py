@@ -56,6 +56,15 @@ def summarize_policy(path):
     }
 
 
+def extract_numeric_id(name, prefix):
+    """Extract numeric ID from a name with a given prefix."""
+    id_str = name.replace(prefix, "").replace(".csv", "")
+    try:
+        return int(id_str)
+    except ValueError:
+        return float('inf')  # Non-numeric names sort to end
+
+
 def main():
     p = argparse.ArgumentParser(description="Aggregate policy CSV results")
     p.add_argument("--output-dir", required=True, help="Output directory where scenario folders live")
@@ -71,13 +80,19 @@ def main():
     summary_path = os.path.join(out_dir, summary_name)
 
     rows = []
-    for scen_name in sorted(os.listdir(out_dir)):
+    # Sort scenarios numerically
+    scenario_dirs = [d for d in os.listdir(out_dir) if os.path.isdir(os.path.join(out_dir, d)) and d.startswith("scenario_")]
+    scenario_dirs.sort(key=lambda x: extract_numeric_id(x, "scenario_"))
+    
+    for scen_name in scenario_dirs:
         scen_path = os.path.join(out_dir, scen_name)
-        if not os.path.isdir(scen_path):
-            continue
         # Expect scen_name like scenario_1
         scen_id = scen_name.replace("scenario_", "")
-        for fname in sorted(os.listdir(scen_path)):
+        # Sort policy files numerically
+        policy_files = [f for f in os.listdir(scen_path) if f.startswith("policy_") and f.endswith(".csv")]
+        policy_files.sort(key=lambda x: extract_numeric_id(x, "policy_"))
+        
+        for fname in policy_files:
             if not fname.startswith("policy_") or not fname.endswith(".csv"):
                 continue
             pol_id = fname.replace("policy_", "").replace(".csv", "")
