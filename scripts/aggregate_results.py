@@ -17,7 +17,7 @@ from statistics import mean, median
 
 def summarize_policy(path):
     pvfps = []
-    pvfp_rems = []
+    pvf_prems = []
     with open(path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -30,7 +30,7 @@ def summarize_policy(path):
             except Exception:
                 pvfprem = float(row.get("PVFPrem") or row.get("out2") or 0.0)
             pvfps.append(pvfp)
-            pvfp_rems.append(pvfprem)
+            pvf_prems.append(pvfprem)
 
     if not pvfps:
         return None
@@ -38,10 +38,10 @@ def summarize_policy(path):
     n = len(pvfps)
     prob_ruin = sum(1 for v in pvfps if v < 0) / n
     avg_pvfp = mean(pvfps)
-    avg_pvfprem = mean(pvfp_rems) if pvfp_rems else 0.0
+    avg_pvfprem = mean(pvf_prems) if pvf_prems else 0.0
     pm_avg = (avg_pvfp / avg_pvfprem) if avg_pvfprem != 0 else None
     med_pvfp = median(pvfps)
-    med_pvfprem = median(pvfp_rems) if pvfp_rems else 0.0
+    med_pvfprem = median(pvf_prems) if pvf_prems else 0.0
     pm_med = (med_pvfp / med_pvfprem) if med_pvfprem != 0 else None
 
     return {
